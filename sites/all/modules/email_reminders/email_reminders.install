@@ -43,6 +43,15 @@ function email_reminders_install() {
     );
     field_create_instance($instance);
 
+    // grant authenticated users permission to create Email Reminders
+    $roles = user_roles();
+    $authenticated_user = array_search('authenticated user', $roles);
+    $permissions = array('create email_reminders_reminder content', 'edit own email_reminders_reminder content', 'delete own email_reminders_reminder content');
+    // grant remaining relevant permissions to Adminstrator user role
+    user_role_grant_permissions($authenticated_user, $permissions);
+    $administrator = array_search('administrator', $roles);
+    $permissions = array('edit any email_reminders_reminder content', 'delete any email_reminders_reminder content');
+    user_role_grant_permissions($administrator, $permissions);
 }
 
 /*

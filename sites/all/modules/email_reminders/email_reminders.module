@@ -71,14 +71,16 @@ function email_reminders_form_alter(&$form, &$form_state, &$form_id) {
         $form['comment_settings']['comment']['#default_value'] = 1;
         $form['author']['name']['#default_value'] = '';
         $roles = $GLOBALS['user']->roles;
-        if (in_array('administrator', $roles)) {
+        if (!in_array('administrator', $roles)) {
             $form['#after_build'][] = 'email_reminders_after_build';
         }
+        dsm($form);
     }
 }
 
+// callback function that hides cck fields after the form is built
 function email_reminders_after_build(&$form, &$form_state) {
-    dsm($form);
+    dsm($form_state);
     $form['comment_settings']['#access'] = FALSE;
     $form['author']['#access'] = FALSE;
     $form['revision_information']['#access'] = FALSE;
@@ -86,4 +88,25 @@ function email_reminders_after_build(&$form, &$form_state) {
     $form['path']['#access'] = FALSE;
     $form['menu']['#access'] = FALSE;
     return $form;
+}
+
+/*
+* Implements hook_cron()
+* Sends necessary emails every time Cron runs -- default interval is 3 hours
+*/
+function email_reminders_cron() {
+    drupal_mail('email_reminders', 'email_reminders_base', 'ryan.apking@gmail.com', language_default());
+}
+
+/*
+* Implements hook_mail()
+* Sets up the email template to be used in Cron
+*/
+function email_reminders_mail($key, &$message, $params) {
+    switch($key) {
+        case 'email_reminders_base':
+            $message['subject'] = t('Sent from your site');
+            $message['body'][] = t('Looks like it worked');
+            break;
+    }
 }

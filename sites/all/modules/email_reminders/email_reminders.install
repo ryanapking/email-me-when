@@ -65,6 +65,33 @@ function email_reminders_install() {
     );
     field_create_instance($instance);
 
+    // create a custom field for the status of the reminder -- 'Pending' or 'Sent'
+    $field_name = 'email_reminders_status';
+    if ( field_info_field( $field_name ) ) {
+        return;
+    }
+    $field = array(
+        'field_name' => $field_name,
+        'type' => 'text',
+    );
+    $field = field_create_field( $field );
+    $instance = array(
+        'field_name' => $field[ 'field_name' ],
+        'entity_type' => 'node',
+        'bundle' => 'email_reminders_reminder',
+        'description' => 'The status of the email reminder.',
+        'label' => 'Reminder Status',
+        'widget' => array(
+            'type' => 'textfield',
+        ),
+        'default_value' => array(
+          0 => array(
+            'value' => 'Pending',
+          ),
+        ),
+    );
+    field_create_instance($instance);
+
     // grant authenticated users permission to create Email Reminders
     $roles = user_roles();
     $authenticated_user = array_search('authenticated user', $roles);

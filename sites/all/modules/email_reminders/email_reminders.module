@@ -43,3 +43,47 @@ function email_reminders_config_form($form, &$form_state) {
         );
     return system_settings_form($form);
 }
+
+/*
+* Implements hook_node_access()
+* restricts access to the creator of the node
+*/
+function email_reminders_node_access($node, $op, $account) {
+    if (gettype($node) == 'object') {
+        if (property_exists($node, 'uid')) {
+            if ($account->uid != $node->uid) {
+                return NODE_ACCESS_DENY;
+            } else {
+                return NODE_ACCESS_ALLOW;
+            }
+        }
+    }
+}
+
+/*
+* Implements hook_form_alter()
+* Removes certain options from the create email reminder form to make the form
+* friendlier for authenticated users
+*/
+function email_reminders_form_alter(&$form, &$form_state, &$form_id) {
+    if ($form_id == 'email_reminders_reminder_node_form') {
+        $form['options']['promote']['#default_value'] = 0;
+        $form['comment_settings']['comment']['#default_value'] = 1;
+        $form['author']['name']['#default_value'] = '';
+        $roles = $GLOBALS['user']->roles;
+        if (in_array('administrator', $roles)) {
+            $form['#after_build'][] = 'email_reminders_after_build';
+        }
+    }
+}
+
+function email_reminders_after_build(&$form, &$form_state) {
+    dsm($form);
+    $form['comment_settings']['#access'] = FALSE;
+    $form['author']['#access'] = FALSE;
+    $form['revision_information']['#access'] = FALSE;
+    $form['options']['#access'] = FALSE;
+    $form['path']['#access'] = FALSE;
+    $form['menu']['#access'] = FALSE;
+    return $form;
+}

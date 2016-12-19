@@ -1,0 +1,54 @@
+<?php
+/*
+* Implements hook_install()
+*/
+function email_reminders_install() {
+    // create a custom content type
+    $type_name = 'email_reminders_reminder';
+    if ( in_array( $type_name, node_type_get_names() ) ) {
+        return;
+    }
+    $type = array(
+        'type' => $type_name,
+        'name' => st( 'Email Reminder' ),
+        'base' => 'node_content',
+        'description' => st( 'For requesting an email reminder.' ),
+        'custom' => 1,
+        'modified' => 1,
+        'locked' => 0,
+    );
+    $type = node_type_set_defaults( $type );
+    node_type_save( $type );
+    node_add_body_field( $type );
+
+    // create a custom field
+    $field_name = 'email_reminders_subject_line';
+    if ( field_info_field( $field_name ) ) {
+        return;
+    }
+    $field = array(
+        'field_name' => $field_name,
+        'type' => 'text',
+    );
+    $field = field_create_field( $field );
+    $instance = array(
+        'field_name' => $field[ 'field_name' ],
+        'entity_type' => 'node',
+        'bundle' => 'email_reminders_reminder',
+        'description' => 'The subject line that will be included in the email.',
+        'label' => 'Email Subject Line',
+        'widget' => array(
+            'type' => 'textfield',
+        ),
+    );
+    field_create_instance($instance);
+
+}
+
+/*
+* Implements hook_uninstall()
+*/
+
+function email_reminders_uninstall() {
+    node_type_delete('email_reminders_reminder');
+}

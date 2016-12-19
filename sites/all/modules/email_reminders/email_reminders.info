@@ -3,4 +3,5 @@ description = Uses cron to send email reminders
 package = Email Me When
 core = 7.x
 files[] = email_reminders.module
+files[] = email_reminders.install
 configure = admin/config/email_reminders

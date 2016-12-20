@@ -71,29 +71,25 @@ function email_reminders_form_alter(&$form, &$form_state, &$form_id) {
         $form['comment_settings']['comment']['#default_value'] = 1;
         $form['author']['name']['#default_value'] = '';
         $form['email_reminders_status']['und']['#options'] = status_options();
-        $roles = $GLOBALS['user']->roles;
-        if (!in_array('administrator', $roles)) {
-            $form['#after_build'][] = 'email_reminders_after_build';
-            $form['email_reminders_email_address']['#access'] = FALSE;
-        }
-        if (!$form['email_reminders_email_address']['und'][0]['value']['#value']) {
-            $form['email_reminders_email_address']['und'][0]['value']['#value'] = $GLOBALS['user']->mail;
-        }
-        dsm($form_state);
-        dsm($form);
+        $form['#after_build'][] = 'email_reminders_after_build';
     }
 }
 
-// callback function that hides cck fields after the form is built
+// hides fields and sets defaults after the email reminders form is built
 function email_reminders_after_build(&$form, &$form_state) {
-    dsm($form_state);
-    $form['comment_settings']['#access'] = FALSE;
-    $form['author']['#access'] = FALSE;
-    $form['revision_information']['#access'] = FALSE;
-    $form['options']['#access'] = FALSE;
-    $form['path']['#access'] = FALSE;
-    $form['menu']['#access'] = FALSE;
-    $form['email_reminders_status']['#access'] = FALSE;
+    if (!$form['email_reminders_email_address']['und'][0]['value']['#default_value']) {
+        $form['email_reminders_email_address']['und'][0]['value']['#default_value'] = $GLOBALS['user']->mail;
+    }
+    if (!in_array('administrator', $GLOBALS['user']->roles)) {
+        $form['email_reminders_email_address']['#access'] = FALSE;
+        $form['comment_settings']['#access'] = FALSE;
+        $form['author']['#access'] = FALSE;
+        $form['revision_information']['#access'] = FALSE;
+        $form['options']['#access'] = FALSE;
+        $form['path']['#access'] = FALSE;
+        $form['menu']['#access'] = FALSE;
+        $form['email_reminders_status']['#access'] = FALSE;
+    }
     return $form;
 }
 
@@ -111,7 +107,6 @@ function status_options() {
 */
 function email_reminders_cron() {
     $query = new EntityFieldQuery();
-    // Maybe query should be tweaked to limit to the current day (if possible)
     $query->entityCondition('entity_type', 'node')
         ->entityCondition('bundle', 'email_reminders_reminder')
         ->fieldCondition('email_reminders_status', 'value', 'Pending', '=');
@@ -120,28 +115,19 @@ function email_reminders_cron() {
         foreach($results['node'] as $node) {
             $node = node_load($node->nid);
             if (sendCheck($node)) {
-                dpm('send now');
                 $email_address = $node->email_reminders_email_address['und'][0]['value'];
-                // drupal_mail('email_reminders', 'email_reminders_base', $email_address, language_default(), $node);
-                // markSent($node);
+                drupal_mail('email_reminders', 'email_reminders_base', $email_address, language_default(), $node);
+                markSent($node);
             } else {
-                dpm('not time to send');
             }
         }
     }
-    // dpm($results);
-    // drupal_mail('email_reminders', 'email_reminders_base', 'ryan.apking@gmail.com', language_default());
 }
 
 // checks if the email should be sent now, returns true or false
 function sendCheck($node) {
-    dpm($node);
     $time = $node->email_reminders_send_date['und'][0]['value'];
-    dpm($time);
     $dateObject = new DateObject($time, new DateTimeZone('UTC'));
-    dpm(date('D, d M Y H:i:s', $dateObject->getTimeStamp()), 'Reminder Time');
-    dpm(date('D, d M Y H:i:s'), 'Current Time');
-    dpm($dateObject);
     if (time() >= $dateObject->getTimeStamp()) {
         return TRUE;
     } else {
@@ -151,7 +137,7 @@ function sendCheck($node) {
 
 // changes the email reminder's status to sent in the database
 function markSent($node) {
-    $node->email_reminders_status['und'][0]['value'] = 'Sent';
+    $node->email_reminders_status['und'][0]['value'] = 'Sent on ' . date('D, d M Y H:i:s');
     node_save($node);
 }
 
@@ -163,7 +149,7 @@ function email_reminders_mail($key, &$message, $params) {
     switch($key) {
         case 'email_reminders_base':
             $subject = $params->email_reminders_subject_line['und'][0]['value'];
-            $body = $params->body['und'][0]['value'];
+            $body = $params->email_reminders_email_body['und'][0]['value'];
             $message['subject'] = t($subject);
             $message['body'][] = t($body);
             break;

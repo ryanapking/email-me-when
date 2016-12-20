@@ -101,7 +101,12 @@ function email_reminders_cron() {
         ->entityCondition('bundle', 'email_reminders_reminder')
         ->fieldCondition('email_reminders_status', 'value', 'Pending', '=');
     $results = $query->execute();
-    watchdog('Email Reminders', dpm($results));
+    foreach($results['node'] as $node) {
+        $node = node_load($node->nid);
+        // we have the Pending nodes!!!
+        dpm($node);
+    }
+    // dpm($results);
     // drupal_mail('email_reminders', 'email_reminders_base', 'ryan.apking@gmail.com', language_default());
 }
 

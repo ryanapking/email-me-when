@@ -102,14 +102,17 @@ function email_reminders_cron() {
         ->entityCondition('bundle', 'email_reminders_reminder')
         ->fieldCondition('email_reminders_status', 'value', 'Pending', '=');
     $results = $query->execute();
-    foreach($results['node'] as $node) {
-        $node = node_load($node->nid);
-        if (sendCheck($node)) {
-            dpm('send now');
-            $email_address = $node->email_reminders_email_address['und'][0]['value'];
-            drupal_mail('email_reminders', 'email_reminders_base', $email_address, language_default(), $node);
-        } else {
-            dpm('not time to send');
+    if ($results) {
+        foreach($results['node'] as $node) {
+            $node = node_load($node->nid);
+            if (sendCheck($node)) {
+                dpm('send now');
+                $email_address = $node->email_reminders_email_address['und'][0]['value'];
+                drupal_mail('email_reminders', 'email_reminders_base', $email_address, language_default(), $node);
+                markSent($node);
+            } else {
+                dpm('not time to send');
+            }
         }
     }
     // dpm($results);
@@ -136,7 +139,8 @@ function sendCheck($node) {
 
 // changes the email reminder's status to sent in the database
 function markSent($node) {
-
+    $node->email_reminders_status['und'][0]['value'] = 'Sent';
+    node_save($node);
 }
 
 /*

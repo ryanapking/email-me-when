@@ -97,17 +97,46 @@ function email_reminders_after_build(&$form, &$form_state) {
 */
 function email_reminders_cron() {
     $query = new EntityFieldQuery();
+    // Maybe query should be tweaked to limit to the current day (if possible)
     $query->entityCondition('entity_type', 'node')
         ->entityCondition('bundle', 'email_reminders_reminder')
         ->fieldCondition('email_reminders_status', 'value', 'Pending', '=');
     $results = $query->execute();
     foreach($results['node'] as $node) {
         $node = node_load($node->nid);
-        // we have the Pending nodes!!!
-        dpm($node);
+        if (sendCheck($node)) {
+            dpm('send now');
+            $email_address = $node->email_reminders_email_address['und'][0]['value'];
+            drupal_mail('email_reminders', 'email_reminders_base', $email_address, language_default(), $node);
+        } else {
+            dpm('not time to send');
+        }
     }
     // dpm($results);
     // drupal_mail('email_reminders', 'email_reminders_base', 'ryan.apking@gmail.com', language_default());
+}
+
+// checks if the email should be sent now, returns true or false
+function sendCheck($node) {
+    dpm($node);
+    $time = $node->email_reminders_send_date['und'][0]['value'];
+    $timezone = $node->email_reminders_send_date['und'][0]['timezone'];
+    dpm($time);
+    dpm($timezone);
+    $dateObject = new DateObject($time, new DateTimeZone($timezone));
+    dpm($dateObject->getTimeStamp());
+    dpm(time());
+    dpm($dateObject);
+    if (time() >= $dateObject->getTimeStamp()) {
+        return TRUE;
+    } else {
+        return FALSE;
+    }
+}
+
+// changes the email reminder's status to sent in the database
+function markSent($node) {
+
 }
 
 /*
@@ -117,8 +146,10 @@ function email_reminders_cron() {
 function email_reminders_mail($key, &$message, $params) {
     switch($key) {
         case 'email_reminders_base':
-            $message['subject'] = t('Sent from your site');
-            $message['body'][] = t('Looks like it worked');
+            $subject = $params->email_reminders_subject_line['und'][0]['value'];
+            $body = $params->body['und'][0]['value'];
+            $message['subject'] = t($subject);
+            $message['body'][] = t($body);
             break;
     }
 }

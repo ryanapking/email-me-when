@@ -43,6 +43,28 @@ function email_reminders_install() {
     );
     field_create_instance($instance);
 
+    // create a custom field for the email address
+    $field_name = 'email_reminders_email_address';
+    if ( field_info_field( $field_name ) ) {
+        return;
+    }
+    $field = array(
+        'field_name' => $field_name,
+        'type' => 'text',
+    );
+    $field = field_create_field( $field );
+    $instance = array(
+        'field_name' => $field[ 'field_name' ],
+        'entity_type' => 'node',
+        'bundle' => 'email_reminders_reminder',
+        'description' => 'The email address that the reminder will be sent to.',
+        'label' => 'Email Address',
+        'widget' => array(
+            'type' => 'textfield',
+        ),
+    );
+    field_create_instance($instance);
+
     // create a custom field for the date the email will be sent
     $field_name = 'email_reminders_send_date';
     if ( field_info_field( $field_name ) ) {

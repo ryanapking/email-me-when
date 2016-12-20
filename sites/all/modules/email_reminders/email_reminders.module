@@ -87,6 +87,7 @@ function email_reminders_after_build(&$form, &$form_state) {
     $form['options']['#access'] = FALSE;
     $form['path']['#access'] = FALSE;
     $form['menu']['#access'] = FALSE;
+    $form['email_reminders_status']['#access'] = FALSE;
     return $form;
 }
 
@@ -95,7 +96,13 @@ function email_reminders_after_build(&$form, &$form_state) {
 * Sends necessary emails every time Cron runs -- default interval is 3 hours
 */
 function email_reminders_cron() {
-    drupal_mail('email_reminders', 'email_reminders_base', 'ryan.apking@gmail.com', language_default());
+    $query = new EntityFieldQuery();
+    $query->entityCondition('entity_type', 'node')
+        ->entityCondition('bundle', 'email_reminders_reminder')
+        ->fieldCondition('email_reminders_status', 'value', 'Pending', '=');
+    $results = $query->execute();
+    watchdog('Email Reminders', dpm($results));
+    // drupal_mail('email_reminders', 'email_reminders_base', 'ryan.apking@gmail.com', language_default());
 }
 
 /*

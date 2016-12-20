@@ -70,10 +70,16 @@ function email_reminders_form_alter(&$form, &$form_state, &$form_id) {
         $form['options']['promote']['#default_value'] = 0;
         $form['comment_settings']['comment']['#default_value'] = 1;
         $form['author']['name']['#default_value'] = '';
+        $form['email_reminders_status']['und']['#options'] = status_options();
         $roles = $GLOBALS['user']->roles;
         if (!in_array('administrator', $roles)) {
             $form['#after_build'][] = 'email_reminders_after_build';
+            $form['email_reminders_email_address']['#access'] = FALSE;
         }
+        if (!$form['email_reminders_email_address']['und'][0]['value']['#value']) {
+            $form['email_reminders_email_address']['und'][0]['value']['#value'] = $GLOBALS['user']->mail;
+        }
+        dsm($form_state);
         dsm($form);
     }
 }
@@ -89,6 +95,14 @@ function email_reminders_after_build(&$form, &$form_state) {
     $form['menu']['#access'] = FALSE;
     $form['email_reminders_status']['#access'] = FALSE;
     return $form;
+}
+
+// returns status select box options
+function status_options() {
+    $options = array();
+    $options['Pending'] = 'Pending';
+    $options['Sent'] = 'Sent';
+    return $options;
 }
 
 /*
@@ -108,8 +122,8 @@ function email_reminders_cron() {
             if (sendCheck($node)) {
                 dpm('send now');
                 $email_address = $node->email_reminders_email_address['und'][0]['value'];
-                drupal_mail('email_reminders', 'email_reminders_base', $email_address, language_default(), $node);
-                markSent($node);
+                // drupal_mail('email_reminders', 'email_reminders_base', $email_address, language_default(), $node);
+                // markSent($node);
             } else {
                 dpm('not time to send');
             }
@@ -126,9 +140,9 @@ function sendCheck($node) {
     $timezone = $node->email_reminders_send_date['und'][0]['timezone'];
     dpm($time);
     dpm($timezone);
-    $dateObject = new DateObject($time, new DateTimeZone($timezone));
-    dpm($dateObject->getTimeStamp());
-    dpm(time());
+    $dateObject = new DateObject($time, new DateTimeZone('UTC'));
+    dpm(date('D, d M Y H:i:s', $dateObject->getTimeStamp()), 'Reminder Time');
+    dpm(date('D, d M Y H:i:s'), 'Current Time');
     dpm($dateObject);
     if (time() >= $dateObject->getTimeStamp()) {
         return TRUE;

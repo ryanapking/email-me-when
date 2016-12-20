@@ -104,7 +104,7 @@ function email_reminders_install() {
         'description' => 'The status of the email reminder.',
         'label' => 'Reminder Status',
         'widget' => array(
-            'type' => 'textfield',
+            'type' => 'options_select',
         ),
         'default_value' => array(
           0 => array(

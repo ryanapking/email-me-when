@@ -1,0 +1,11 @@
+name = Custom Content Type
+description = Example of modifying mandatory fields
+core = 7.x
+package = Features
+dependencies[] = features
+dependencies[] = text
+features[features_api][] = api:2
+features[field_base][] = body
+features[field_instance][] = node-custom_content_type-body
+features[node][] = custom_content_type
+project path = sites/all/modules

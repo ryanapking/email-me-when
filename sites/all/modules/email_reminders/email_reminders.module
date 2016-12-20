@@ -137,9 +137,7 @@ function email_reminders_cron() {
 function sendCheck($node) {
     dpm($node);
     $time = $node->email_reminders_send_date['und'][0]['value'];
-    $timezone = $node->email_reminders_send_date['und'][0]['timezone'];
     dpm($time);
-    dpm($timezone);
     $dateObject = new DateObject($time, new DateTimeZone('UTC'));
     dpm(date('D, d M Y H:i:s', $dateObject->getTimeStamp()), 'Reminder Time');
     dpm(date('D, d M Y H:i:s'), 'Current Time');

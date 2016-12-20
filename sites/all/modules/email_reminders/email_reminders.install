@@ -19,26 +19,25 @@ function email_reminders_install() {
     );
     $type = node_type_set_defaults( $type );
     node_type_save( $type );
-    node_add_body_field( $type );
 
-    // create a custom field for the subject line
-    $field_name = 'email_reminders_subject_line';
+    // create a custom field for the date the email will be sent
+    $field_name = 'email_reminders_send_date';
     if ( field_info_field( $field_name ) ) {
         return;
     }
     $field = array(
         'field_name' => $field_name,
-        'type' => 'text',
+        'type' => 'date',
     );
     $field = field_create_field( $field );
     $instance = array(
         'field_name' => $field[ 'field_name' ],
         'entity_type' => 'node',
         'bundle' => 'email_reminders_reminder',
-        'description' => 'The subject line that will be included in the email.',
-        'label' => 'Email Subject Line',
+        'description' => 'The date the email will be sent.',
+        'label' => 'Reminder Send Date',
         'widget' => array(
-            'type' => 'textfield',
+            'type' => 'date_popup',
         ),
     );
     field_create_instance($instance);
@@ -65,27 +64,53 @@ function email_reminders_install() {
     );
     field_create_instance($instance);
 
-    // create a custom field for the date the email will be sent
-    $field_name = 'email_reminders_send_date';
+    // create a custom field for the subject line
+    $field_name = 'email_reminders_subject_line';
     if ( field_info_field( $field_name ) ) {
         return;
     }
     $field = array(
         'field_name' => $field_name,
-        'type' => 'date',
+        'type' => 'text',
     );
     $field = field_create_field( $field );
     $instance = array(
         'field_name' => $field[ 'field_name' ],
         'entity_type' => 'node',
         'bundle' => 'email_reminders_reminder',
-        'description' => 'The date the email will be sent.',
-        'label' => 'Reminder Send Date',
+        'description' => 'The subject line that will be included in the email.',
+        'label' => 'Email Subject Line',
         'widget' => array(
-            'type' => 'date_popup',
+            'type' => 'textfield',
         ),
     );
     field_create_instance($instance);
+
+    // create a custom field for the email body
+    $field_name = 'email_reminders_email_body';
+    if ( field_info_field( $field_name ) ) {
+        return;
+    }
+    $field = array(
+        'field_name' => $field_name,
+        'type' => 'text',
+    );
+    $field = field_create_field( $field );
+    $instance = array(
+        'field_name' => $field[ 'field_name' ],
+        'entity_type' => 'node',
+        'bundle' => 'email_reminders_reminder',
+        'description' => 'The body of the email reminder.',
+        'label' => 'Email Body',
+        'widget' => array(
+            'type' => 'text_textarea_with_summary',
+            'settings' => array(
+                'rows' => 8,
+            ),
+        ),
+    );
+    field_create_instance($instance);
+
 
     // create a custom field for the status of the reminder -- 'Pending' or 'Sent'
     $field_name = 'email_reminders_status';

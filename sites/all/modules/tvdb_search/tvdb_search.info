@@ -1,0 +1,5 @@
+name = The TVDB Search
+description = Searches the TVDB and returns the data
+package = TVDB
+core = 7.x
+files[] = tvdb_search.module

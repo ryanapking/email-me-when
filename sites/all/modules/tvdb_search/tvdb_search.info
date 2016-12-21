@@ -1,5 +1,7 @@
-name = The TVDB Search
-description = Searches the TVDB and returns the data
+name = TVDB Search
+description = Searches the TVDB and returns the data.
 package = TVDB
 core = 7.x
 files[] = tvdb_search.module
+files[] = tvdb_search.install
+configure = admin/config/tvdb_search

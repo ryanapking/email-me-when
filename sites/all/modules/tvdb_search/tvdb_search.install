@@ -1,0 +1,9 @@
+<?php
+
+function tvdb_search_install() {
+
+}
+
+function tvdb_search_uninstall() {
+
+}

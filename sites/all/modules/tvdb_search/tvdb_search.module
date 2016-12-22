@@ -98,10 +98,39 @@ function tvdb_search_form_submit($form, &$form_state) {
     $form_state['redirect'] = 'tvdb_search/' . $search_term . '/results';
 }
 
+function tvdb_search_login_form_submit($form, &$form_state) {
+    $apikey = $form_state['values']['tvdb_search_apikey'];
+    $username = $form_state['values']['tvdb_search_username'];
+    $userkey = $form_state['values']['tvdb_search_userkey'];
+    variable_set('tvdb_search_apikey', $apikey);
+    variable_set('tvdb_search_username', $username);
+    variable_set('tvdb_search_userkey', $userkey);
+    tvdb_search_login();
+}
+
+function tvdb_search_token_refresh_form_submit($form, &$form_state) {
+    tvdb_search_refresh_token();
+}
+
+function tvdb_search_link_form_submit($form, &$form_state) {
+    $link_text = $form_state['values']['tvdb_search_link_text'];
+    $link_href = $form_state['values']['tvdb_search_link_href'];
+    variable_set('tvdb_search_link_href', $link_href);
+    variable_set('tvdb_search_link_text', $link_text);
+}
+
 /*
 * Administration form
 */
 function tvdb_search_config_form($form, &$form_state) {
+    $form['null_form'] = drupal_get_form('null_form');
+    $form['tvdb_search_login_form'] = drupal_get_form('tvdb_search_login_form');
+    $form['tvdb_search_token_refresh_form'] = drupal_get_form('tvdb_search_token_refresh_form');
+    $form['tvdb_search_link_form'] = drupal_get_form('tvdb_search_link_form');
+    return $form;
+}
+
+function tvdb_search_login_form($form, &$form_state) {
     $form['tvdb_search_apikey'] = array(
             '#type' => 'textfield',
             '#title' => t('TVDB Api Key'),
@@ -117,12 +146,28 @@ function tvdb_search_config_form($form, &$form_state) {
             '#title' => t('TVDB Userkey'),
             '#default_value' => variable_get('tvdb_search_userkey', ''),
         );
+    $form['submit'] = array(
+            '#type' => 'submit',
+            '#value' => 'Save Info and Log In',
+        );
+    return $form;
+}
+
+function tvdb_search_token_refresh_form($form, &$form_state) {
     $form['tvdb_search_token'] = array(
             '#type' => 'textfield',
             '#title' => t('TVDB Token'),
             '#default_value' => variable_get('tvdb_search_token', ''),
             '#disabled' => TRUE,
         );
+    $form['submit'] = array(
+            '#type' => 'submit',
+            '#value' => 'Manually Refresh Token',
+        );
+    return $form;
+}
+
+function tvdb_search_link_form($form, &$form_state) {
     $form['tvdb_search_link_text'] = array(
             '#type' => 'textfield',
             '#title' => t('Link Text'),
@@ -135,5 +180,13 @@ function tvdb_search_config_form($form, &$form_state) {
             '#description' => t('This is the path that the link will lead to.'),
             '#default_value' => variable_get('tvdb_search_link_href', ''),
         );
-    return system_settings_form($form);
+    $form['submit'] = array(
+            '#type' => 'submit',
+            '#value' => 'Save Link Info',
+        );
+    return $form;
+}
+
+function null_form() {
+    // This form is literally doing nothing. For some reason the first form loaded in the config form does not function correctly.
 }

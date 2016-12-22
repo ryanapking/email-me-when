@@ -41,25 +41,8 @@ function tvdb_search_menu() {
     return $items;
 }
 
-/*
-* TVDB Search form
-*/
-function tvdb_search_form($form, &$form_state) {
-    $form['tvdb_search_search_term'] = array(
-            '#type' => 'textfield',
-            '#title' => t('Search TVDB'),
-            '#description' => t('Enter the title of a TV series to search for.'),
-        );
-    $form['tvdb_search_submit'] = array(
-            '#type' => 'submit',
-            '#value' => t('Search'),
-        );
-    return $form;
-}
 
 function tvdb_search_results_display_page($search_term) {
-    $href = variable_get('tvdb_search_link_href', '');
-    $link_text = variable_get('tvdb_search_link_text', '');
     $results = tvdb_search($search_term);
     $link = '';
     $search_form = drupal_get_form('tvdb_search_form');
@@ -72,9 +55,7 @@ function tvdb_search_results_display_page($search_term) {
     }
     $string .= '<h2>Results of search for "' . $search_term . '":</h2>';
     foreach($results->data as $show) {
-        $link = l($link_text, "$href/$show->id/$show->seriesName", array(
-            'html' => TRUE,
-        ));
+        $link = tvdb_search_build_link($show->id, $show->seriesName);
         $string .=
             "<h3>Show Title: $show->seriesName</h3>
             <p>Overview: $show->overview</p>
@@ -88,7 +69,7 @@ function tvdb_search_results_display_page($search_term) {
 }
 
 /*
-*
+* Implementations of hook_form_submit()
 */
 function tvdb_search_form_submit($form, &$form_state) {
     $search_term = $form_state['values']['tvdb_search_search_term'];
@@ -117,7 +98,7 @@ function tvdb_search_link_form_submit($form, &$form_state) {
 }
 
 /*
-* Administration form
+* Module Config form
 */
 function tvdb_search_config_form($form, &$form_state) {
     $form['null_form'] = drupal_get_form('null_form');
@@ -168,14 +149,28 @@ function tvdb_search_link_form($form, &$form_state) {
     $form['tvdb_search_link_text'] = array(
             '#type' => 'textfield',
             '#title' => t('Link Text'),
-            '#description' => t('This will be the link text of the link that is attached to each found show.'),
+            '#prefix' => t("
+                <h3>Search Results Link</h3>
+                <hr>
+                <p>A link to will be generated to attach to each search result.</p>
+            "),
             '#default_value' => variable_get('tvdb_search_link_text', ''),
         );
     $form['tvdb_search_link_href'] = array(
             '#type' => 'textfield',
             '#title' => t('Link HREF'),
-            '#description' => t('This is the path that the link will lead to.'),
+            '#description' => t("Path must be relative to your drupal project. Example: \"tvdb_search\" yields this link: \"localhost/tvdb_search\""),
             '#default_value' => variable_get('tvdb_search_link_href', ''),
+            '#suffix' => t("
+                <p>Variables Available:</p>
+                <ul>
+                    <li>[username] = Username of current Drupal user</li>
+                    <li>[user_id] = User ID of current Drupal user</li>
+                    <li>[show_id] = Show ID from the TVDB</li>
+                    <li>[show_name] = Show name</li>
+                    <br>
+                </ul>
+            "),
         );
     $form['submit'] = array(
             '#type' => 'submit',
@@ -190,4 +185,38 @@ function null_form() {
 
 function tvdb_search_cron() {
     tvdb_search_refresh_token();
+}
+
+
+/*
+* TVDB Search form
+*/
+function tvdb_search_form($form, &$form_state) {
+    $form['tvdb_search_search_term'] = array(
+            '#type' => 'textfield',
+            '#title' => t('Search TVDB'),
+            '#description' => t('Enter the title of a TV series to search for.'),
+        );
+    $form['tvdb_search_submit'] = array(
+            '#type' => 'submit',
+            '#value' => t('Search'),
+        );
+    return $form;
+}
+
+function tvdb_search_build_link($show_id, $show_name) {
+    $link_href = variable_get('tvdb_search_link_href', '');
+    $link_text = variable_get('tvdb_search_link_text', '');
+    $link_href = str_replace("[username]", $GLOBALS['user']->name, $link_href);
+    $link_href = str_replace("[user_id]", $GLOBALS['user']->uid, $link_href);
+    $link_href = str_replace("[show_id]", $show_id, $link_href);
+    $link_href = str_replace("[show_name]", $show_name, $link_href);
+    $link_text = str_replace("[username]", $GLOBALS['user']->name, $link_text);
+    $link_text = str_replace("[user_id]", $GLOBALS['user']->uid, $link_text);
+    $link_text = str_replace("[show_id]", $show_id, $link_text);
+    $link_text = str_replace("[show_name]", $show_name, $link_text);
+    $link = l($link_text, $link_href, array(
+        'html' => TRUE,
+    ));
+    return $link;
 }

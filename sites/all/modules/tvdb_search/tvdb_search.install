@@ -1,9 +1,10 @@
 <?php
 
-function tvdb_search_install() {
-
-}
-
 function tvdb_search_uninstall() {
-
+    variable_del('tvdb_search_apikey');
+    variable_del('tvdb_search_username');
+    variable_del('tvdb_search_userkey');
+    variable_del('tvdb_search_token');
+    variable_del('tvdb_search_link_text');
+    variable_del('tvdb_search_link_href');
 }

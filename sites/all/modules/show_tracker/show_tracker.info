@@ -1,0 +1,6 @@
+name = Show Tracker
+description = Tracks a TV show as returned from the TVDB Search module.
+package = Email Me When
+core = 7.x
+dependencies[] = entity
+files[] = show_tracker.module

@@ -1,0 +1,53 @@
+<?php
+
+function show_tracker_menu() {
+    $items = array();
+    $items['track_show/%/%'] = array(
+            'title' => 'Track Show',
+            'type' => MENU_CALLBACK,
+            'page callback' => 'track_show',
+            'page arguments' => array(1, 2),
+            'access callback' => TRUE,
+        );
+    $items['display_episodes/%'] = array(
+            'title' => 'Episodes',
+            'type' => MENU_CALLBACK,
+            'page callback' => 'show_episodes',
+            'page arguments' => array(1),
+            'access callback' => TRUE,
+        );
+    return $items;
+}
+
+function show_episodes($show_id) {
+    $episodes = tvdb_get_episodes_by_show_id($show_id);
+    dsm($episodes);
+    return 'hello';
+}
+
+function track_show($show_id, $show_name) {
+    $user = $GLOBALS['user'];
+    $values = array(
+        'type' => 'show_tracker',
+        'uid' => $user->uid,
+        'status' => 1,
+        'comment' => 0,
+        'promote' => 0,
+    );
+    $entity = entity_create('node', $values);
+    $ewrapper = entity_metadata_wrapper('node', $entity);
+    $ewrapper->title->set("$show_name - $show_id - " . Date('d M Y H:i:s'));
+    $ewrapper->field_show_id->set($show_id);
+    $ewrapper->field_username->set($user->name);
+    $ewrapper->field_email_address->set($user->mail);
+    $ewrapper->field_show_status->set('Active');
+    $ewrapper->field_last_reminder->set(0);
+    $ewrapper->field_next_reminder->set(0);
+    $ewrapper->field_reminder_status->set('Active');
+    $ewrapper->save();
+    drupal_goto('/');
+}
+
+function show_tracker_cron() {
+
+}

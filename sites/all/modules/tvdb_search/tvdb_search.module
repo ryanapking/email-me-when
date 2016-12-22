@@ -31,13 +31,6 @@ function tvdb_search_menu() {
             'page arguments' => array('tvdb_search_form'),
             'menu_name' => 'main-menu',
         );
-    $items['tvdb_login'] = array(
-            'title' => 'TVDB Login',
-            'type' => MENU_NORMAL_ITEM,
-            'access callback' => TRUE,
-            'page callback' => 'tvdb_login',
-            'menu_name' => 'main-menu',
-        );
     $items['tvdb_search/%/results'] = array(
             'title' => 'TVDB Search Results',
             'type' => MENU_CALLBACK,
@@ -69,23 +62,27 @@ function tvdb_search_results_display_page($search_term) {
     $link_text = variable_get('tvdb_search_link_text', '');
     $results = tvdb_search($search_term);
     $link = '';
-    if ($href && $link_text) {
-    }
-    dpm($results);
     $search_form = drupal_get_form('tvdb_search_form');
     $string = '';
     $string .= drupal_render($search_form);
+    if (property_exists($results, 'Error')) {
+        return $string . "
+        <h3>Your search for \"$search_term\" yielded no results</h3>
+        ";
+    }
     $string .= '<h2>Results of search for "' . $search_term . '":</h2>';
     foreach($results->data as $show) {
-        $string .= "<h3>Show Title: " . $show->seriesName . "</h3>";
-        $string .= "<p>Overview: " . $show->overview . "</p>";
-        $string .= "<p>Network: " . $show->network . "</p>";
-        $string .= "<p>Status: " . $show->status . "</p>";
-        $link = l($link_text, $href . '/' . $show->id . '/' . $show->seriesName, array(
+        $link = l($link_text, "$href/$show->id/$show->seriesName", array(
             'html' => TRUE,
         ));
-        $string .= $link;
-        $string .= "<hr>";
+        $string .=
+            "<h3>Show Title: $show->seriesName</h3>
+            <p>Overview: $show->overview</p>
+            <p>Network: $show->network</p>
+            <p>Status: $show->status</p>
+            $link
+            <hr>"
+        ;
     }
     return $string;
 }

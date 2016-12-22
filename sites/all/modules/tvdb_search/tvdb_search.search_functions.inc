@@ -21,9 +21,9 @@ function tvdb_search($search_term) {
 
     $result = curl_exec($ch);
     if (curl_errno($ch)) {
-        $error = curl_error($ch);
+        $error = json_decode(curl_error($ch));
         curl_close ($ch);
-        return 'Error:' . $error;
+        return json_decode($error);
     } else {
         curl_close ($ch);
         $result_object = json_decode($result);

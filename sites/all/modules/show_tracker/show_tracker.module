@@ -48,6 +48,28 @@ function track_show($show_id, $show_name) {
     drupal_goto('/');
 }
 
+/*
+* Implements hook_cron()
+* This cron task will have to combine the Show Tracker content type with the
+* episode data retrieved from the TVDB Search module and create new content
+* of the type Email Reminder.
+*/
 function show_tracker_cron() {
+    // will pull in all show trackers of active shows and deal with them one at a time
+    // sends to find_common_show_trackers
+    // sends common show trackers to create_email_reminders
+    // removes show trackers that have been dealt with from the array of show trackers being dealt with
+}
+
+function find_common_show_trackers(&$show_trackers) {
+    // will find other show trackers and deal with the same show, to avoid repetition, and send this back.
+    // will return an array of two arrays: the show trackers that share a show, and the shows trackers that don't.
+}
+
+function check_episode_against_user($show_tracker, $episodes) {
+    // Parses show trackers and episodes, creating email reminders if necessary
+}
+
+function create_email_reminder($episode, $show_tracker) {
 
 }

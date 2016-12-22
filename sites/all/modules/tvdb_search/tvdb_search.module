@@ -207,12 +207,18 @@ function tvdb_search_form($form, &$form_state) {
 function tvdb_search_build_link($show_id, $show_name) {
     $link_href = variable_get('tvdb_search_link_href', '');
     $link_text = variable_get('tvdb_search_link_text', '');
-    $link_href = str_replace("[username]", $GLOBALS['user']->name, $link_href);
-    $link_href = str_replace("[user_id]", $GLOBALS['user']->uid, $link_href);
+    $username = 'anonymous';
+    $uid = 0;
+    if (property_exists($GLOBALS['user'], 'name')) {
+        $username = $GLOBALS['user']->name;
+        $uid = $GLOBALS['user']->uid;
+    }
+    $link_href = str_replace("[username]", $username, $link_href);
+    $link_href = str_replace("[user_id]", $uid, $link_href);
     $link_href = str_replace("[show_id]", $show_id, $link_href);
     $link_href = str_replace("[show_name]", $show_name, $link_href);
-    $link_text = str_replace("[username]", $GLOBALS['user']->name, $link_text);
-    $link_text = str_replace("[user_id]", $GLOBALS['user']->uid, $link_text);
+    $link_text = str_replace("[username]", $username, $link_text);
+    $link_text = str_replace("[user_id]", $uid, $link_text);
     $link_text = str_replace("[show_id]", $show_id, $link_text);
     $link_text = str_replace("[show_name]", $show_name, $link_text);
     $link = l($link_text, $link_href, array(
